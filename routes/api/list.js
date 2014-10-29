@@ -68,9 +68,18 @@ exports = module.exports = function(req, res) {
 				if (!srcList) return sendError('invalid list provided');
 
 				var field = srcList.fields[req.query.field];
-
-				if (!field || field.type !== 'relationship') return sendError('invalid field provided');
-
+				if(!field){
+					if(field.type === 'nested'){
+						var _index = srcList.filds.indexOf(req.query.context);
+						if( ~_index){
+							srcList = keystone.list(srcList.filds[_index].type);	
+						}else{
+							return sendError('invalid field provided');
+						}
+					}else if(field.type !== 'relationship'){
+						return sendError('invalid field provided');
+					}
+				}
 				if (!field.hasFilters) {
 					return doQuery();
 				}
